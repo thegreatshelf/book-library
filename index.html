@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Great Shelf | Digital Library</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* --- MASTER THEME VARIABLES (DARK MODE DEFAULT) --- */
+        :root {
+            --bg: #0a0a0a;
+            --card: #161616;
+            --accent: #4CAF50;
+            --borrowed: #ff9800;
+            --text: #ffffff;
+            --dim: #999999;
+            --border: #333333;
+            --header-bg: #111111;
+            --footer-bg: #000000;
+            --admin-red: #3a0a0a;
+            --gold: #D4AF37;
+            --slot-off: #222222;
+            --shadow: rgba(0,0,0,0.8);
+        }
+
+        /* --- LIGHT MODE VARIABLES --- */
+        body.light-mode {
+            --bg: #f4f6f8;
+            --card: #ffffff;
+            --accent: #2e7d32; 
+            --borrowed: #e65100; 
+            --text: #1a1a1a;
+            --dim: #666666;
+            --border: #dddddd;
+            --header-bg: #ffffff;
+            --footer-bg: #ffffff;
+            --admin-red: #ffeaea;
+            --gold: #b8860b; 
+            --slot-off: #e0e0e0;
+            --shadow: rgba(0,0,0,0.1);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding-bottom: 250px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* --- Header Styles & Theme Toggle --- */
+        header { 
+            position: relative; text-align: center; padding: 30px 20px; 
+            background: var(--header-bg); border-bottom: 1px solid var(--border); transition: background 0.3s;
+        }
+        
+        .theme-toggle {
+            position: absolute; top: 20px; right: 20px; background: none; border: none;
+            font-size: 28px; cursor: pointer; transition: transform 0.2s;
+        }
+        .theme-toggle:hover { transform: scale(1.1); }
+
+        .logo { width: 120px; } 
+        
+        .golden-title {
+            color: var(--gold); font-family: 'Cinzel', serif; font-size: 2.2em;
+            margin: 10px 0 5px 0; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 2px; text-shadow: 2px 2px 4px var(--shadow);
+        }
+
+        .delivery-note { color: #ff9800; font-size: 0.85em; font-weight: bold; margin-top: 5px; }
+        
+        /* --- Search & Nav --- */
+        .controls { max-width: 700px; margin: 0 auto; padding: 20px; text-align: center; }
+        #bookSearch { 
+            width: 100%; padding: 12px; border-radius: 25px; border: 1px solid var(--border); 
+            background: var(--card); color: var(--text); margin-bottom: 15px; outline: none;
+        }
+        
+        nav button { 
+            background: none; border: 1px solid var(--border); color: var(--text); 
+            padding: 8px 15px; margin: 5px; cursor: pointer; border-radius: 20px; transition: 0.3s;
+        }
+        nav button:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* --- List View --- */
+        .book-list { max-width: 750px; margin: 0 auto; padding: 20px; min-height: 300px; }
+        .book-item { 
+            background: var(--card); margin-bottom: 20px; padding: 20px; 
+            border-radius: 12px; display: flex; gap: 20px; border: 1px solid var(--border);
+            align-items: center; box-shadow: 0 4px 10px var(--shadow);
+        }
+        .book-item img { width: 100px; height: 150px; object-fit: cover; border-radius: 5px; }
+        .book-info { flex: 1; }
+        .book-info h3 { margin: 0; color: var(--accent); }
+        .book-info p { color: var(--text); opacity: 0.9; }
+        
+        .btn-action { border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .add-btn { background: var(--accent); color: white; }
+        .remove-btn { background: #ff4444; color: white; }
+        .borrowed-btn { background: var(--border); color: var(--dim); cursor: not-allowed; }
+
+        /* --- Floating Contact Button --- */
+        .contact-float {
+            position: fixed;
+            bottom: 110px;
+            right: 20px;
+            background: #25D366; 
+            color: white;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px var(--shadow);
+            z-index: 999;
+            transition: transform 0.2s;
+        }
+        .contact-float:hover { transform: scale(1.05); }
+
+        /* --- Modals --- */
+        #checkoutModal, #loginModal, #manageModal, #subModal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;
+        }
+        .form-box { 
+            background: var(--card); padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; 
+            border: 2px solid var(--accent); color: var(--text); max-height: 90vh; overflow-y: auto;
+        }
+        .form-box input, .form-box textarea { 
+            width: 100%; padding: 12px; margin: 10px 0; background: var(--bg); border: 1px solid var(--border); color: var(--text); box-sizing: border-box; border-radius: 5px;
+        }
+        
+        .action-divider { border-top: 1px solid var(--border); margin: 15px 0; padding-top: 15px; }
+
+        /* --- Cart Footer --- */
+        .cart-footer {
+            position: fixed; bottom: 0; width: 100%; background: var(--footer-bg); 
+            padding: 20px; border-top: 2px solid var(--accent); text-align: center; z-index: 1000;
+            box-shadow: 0 -5px 15px var(--shadow);
+        }
+
+        /* --- ADMIN MANAGEMENT CORNER --- */
+        #adminPanel {
+            display: none; background: var(--admin-red); padding: 25px;
+            border-top: 3px solid #ff4444; text-align: center;
+        }
+        .admin-bar { background: var(--header-bg); padding: 15px; text-align: center; border-top: 1px solid var(--border); }
+        .admin-bar span { cursor: pointer; transition: 0.3s; padding: 8px 15px; border-radius: 5px; font-weight: bold; }
+        
+        .link-normal { color: var(--text); opacity: 0.2; font-size: 11px; }
+        .link-normal:hover { opacity: 1; }
+        .link-maint { color: var(--accent); font-size: 14px; border: 1px solid var(--accent); }
+
+        .legend { font-size: 12px; color: var(--text); margin-bottom: 10px; }
+        .legend span { display: inline-block; padding: 2px 8px; border-radius: 3px; margin: 0 5px; font-weight: bold; color: white;}
+        
+        .slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); gap: 5px; max-width: 800px; margin: 10px auto 20px auto; }
+        .slot-btn { padding: 8px 0; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; color: white;}
+        .maint-btn { background: #ff9800; color: black; padding: 12px 25px; margin: 10px; border: none; font-weight: bold; cursor: pointer; border-radius: 5px;}
+        .section-sel-btn { background: var(--text); color: var(--bg); padding: 8px 15px; margin: 5px; border: none; cursor: pointer; font-weight: bold; border-radius: 4px;}
+
+        /* --- MAINTENANCE VIEW --- */
+        #maintMessage { display: none; text-align: center; padding: 100px 20px; color: #ff9800; background: var(--bg); min-height: 100vh; }
+        .timer-box { font-size: 3em; font-family: monospace; background: var(--header-bg); display: inline-block; padding: 20px; border-radius: 10px; border: 2px solid #ff9800; margin-top: 20px; letter-spacing: 5px; }
+
+        .security-box { background: var(--header-bg); padding: 15px; border-radius: 10px; margin-top: 10px; max-width: 300px; margin-left: auto; margin-right: auto; border: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+
+<div id="maintMessage">
+    <h1 class="golden-title" style="margin-bottom: 20px;">THE GREAT SHELF</h1>
+    <h2>🚧 Library Closed for Updates</h2>
+    <div style="margin-top:40px;">
+        <h3>WEBSITE OPENS IN:</h3>
+        <div class="timer-box" id="digitalTimer">00:00:00</div>
+    </div>
+</div>
+
+<div id="siteContent">
+    <header>
+        <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Switch Light/Dark Mode">☀️</button>
+        <img src="logo.png" alt="The Great Shelf Logo" class="logo">
+        <h1 class="golden-title">THE GREAT SHELF</h1>
+        
+        <p id="headerRatesDisplay" style="color:var(--dim); margin-bottom:5px;"></p>
+        
+        <div class="delivery-note">* Delivery charges may apply</div>
+        <button onclick="openSubModal()" style="background: var(--gold); color: #000; font-weight: bold; border-radius: 20px; padding: 8px 20px; margin-top: 15px; border: none; cursor: pointer; box-shadow: 0 4px 10px var(--shadow);">👑 Premium Membership</button>
+    </header>
+
+    <div class="controls">
+        <input type="text" id="bookSearch" placeholder="Search active books..." onkeyup="searchBooks()">
+        <nav>
+            <button onclick="changeCat('islamic')">Islamic</button>
+            <button onclick="changeCat('history')">History</button>
+            <button onclick="changeCat('science')">Science</button>
+            <button onclick="changeCat('mystery')">Mystery</button>
+            <button onclick="changeCat('children')">Children</button>
+        </nav>
+    </div>
+    <div id="bookContainer" class="book-list"></div>
+
+    <div class="contact-float" onclick="contactHelp()">
+        💬 Need Help?
+    </div>
+</div>
+
+<div id="subModal">
+    <div class="form-box" style="text-align: center; border-color: var(--gold); max-width: 500px;">
+        <h2 style="color: var(--gold); margin-top: 0; font-family: 'Cinzel', serif;">Premium Memberships</h2>
+        <p style="color: var(--text); font-size: 0.9em; margin-bottom: 20px;">Enjoy <strong>Free Delivery</strong> and unlimited borrowing.</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+            <div style="border: 1px solid var(--border); padding: 15px; border-radius: 10px; background: rgba(212,175,55,0.05);">
+                <h4 style="margin: 0; color: var(--gold);">Monthly Pass</h4>
+                <div style="font-size: 1.4em; font-weight: bold; margin: 5px 0;"><span id="displayRate1M"></span> <span style="font-size: 0.6em; color: var(--dim);">PKR/mo</span></div>
+                <button class="btn-action" style="width:100%; background: #25D366; color: white; font-size: 13px;" onclick="contactSubscription('1 Month', shelfRates.m1)">Select Monthly</button>
+            </div>
+
+            <div style="border: 2px solid var(--gold); padding: 15px; border-radius: 10px; background: rgba(212,175,55,0.1); position: relative;">
+                <span style="position: absolute; top: -10px; right: 10px; background: var(--gold); color: black; font-size: 10px; padding: 2px 8px; border-radius: 5px; font-weight: bold;">SAVE</span>
+                <h4 style="margin: 0; color: var(--gold);">Semi-Annual Pass</h4>
+                <div style="font-size: 1.4em; font-weight: bold; margin: 5px 0;"><span id="displayRate6M"></span> <span style="font-size: 0.6em; color: var(--dim);">PKR / 6 Months</span></div>
+                <button class="btn-action" style="width:100%; background: #25D366; color: white; font-size: 13px;" onclick="contactSubscription('6 Months', shelfRates.m6)">Select 6 Months</button>
+            </div>
+
+            <div style="border: 1px solid var(--border); padding: 15px; border-radius: 10px; background: rgba(212,175,55,0.05); position: relative;">
+                <span style="position: absolute; top: -10px; right: 10px; background: var(--accent); color: white; font-size: 10px; padding: 2px 8px; border-radius: 5px; font-weight: bold;">BEST VALUE</span>
+                <h4 style="margin: 0; color: var(--gold);">Annual Pass</h4>
+                <div style="font-size: 1.4em; font-weight: bold; margin: 5px 0;"><span id="displayRate1Y"></span> <span style="font-size: 0.6em; color: var(--dim);">PKR / Year</span></div>
+                <button class="btn-action" style="width:100%; background: #25D366; color: white; font-size: 13px;" onclick="contactSubscription('1 Year', shelfRates.m12)">Select Annual</button>
+            </div>
+        </div>
+
+        <button class="btn-action" style="width:100%; background: transparent; border: 2px solid #25D366; color: #25D366; font-size: 14px; margin-bottom: 15px; cursor: pointer; transition: 0.3s;" onclick="contactSubHelp()" onmouseover="this.style.background='#25D366'; this.style.color='white'" onmouseout="this.style.background='transparent'; this.style.color='#25D366'">
+            📞 Helpline: <span id="displaySubNum"></span>
+        </button>
+
+        <button onclick="closeSubModal()" style="background:none; border:none; color:var(--dim); cursor:pointer; width:100%;">Close</button>
+    </div>
+</div>
+
+<div id="checkoutModal">
+    <div class="form-box">
+        <h3 style="color: var(--accent); margin-top: 0;">Finalize Order</h3>
+        <input type="text" id="custName" placeholder="Your Full Name">
+        <textarea id="custAddress" placeholder="Full Delivery Address" rows="3"></textarea>
+        <input type="number" id="rentDays" placeholder="Rental Days">
+        <button class="btn-action add-btn" style="width:100%" onclick="sendWhatsApp()">Assalamu Alaikum, Order Now</button>
+        <button onclick="closeModal()" style="background:none; border:none; color:var(--dim); margin-top:15px; cursor:pointer; width:100%;">Cancel</button>
+    </div>
+</div>
+
+<div id="loginModal">
+    <div class="form-box">
+        <h3 style="color: var(--accent); margin-top: 0; text-align: center;">Admin Verification</h3>
+        <p id="loginError" style="color: #ff4444; font-size: 12px; text-align: center; display: none;">Invalid Credentials.</p>
+        
+        <input type="text" id="authUsername" placeholder="Username" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('authPassword').focus(); }">
+        
+        <div style="position: relative; width: 100%; margin: 10px 0;">
+            <input type="password" id="authPassword" placeholder="Password" style="width: 100%; padding: 12px 35px 12px 12px; margin: 0; box-sizing: border-box;" onkeydown="if(event.key === 'Enter') { event.preventDefault(); processLogin(); }">
+            <span id="authToggleEye" onclick="toggleAuthPassVisibility()" style="position: absolute; right: 12px; top: 12px; cursor: pointer; user-select: none; font-size: 16px;">👁️</span>
+        </div>
+
+        <button class="btn-action add-btn" style="width:100%; margin-top: 10px;" onclick="processLogin()">Secure Login</button>
+        <button onclick="closeLoginModal()" style="background:none; border:none; color:var(--dim); margin-top:15px; cursor:pointer; width:100%;">Cancel</button>
+    </div>
+</div>
+
+<div id="manageModal">
+    <div class="form-box">
+        <h3 id="manageTitleHeader" style="color: var(--accent); margin-top: 0;">Manage Book Slot</h3>
+        <input type="hidden" id="manageSlotId">
+        <label style="font-size: 11px; color: var(--dim);">Book Title:</label>
+        <input type="text" id="manageTitle" placeholder="Enter Book Name" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('manageDesc').focus(); }">
+        <label style="font-size: 11px; color: var(--dim);">Description:</label>
+        <textarea id="manageDesc" placeholder="Enter Description" rows="3"></textarea>
+        <button class="btn-action add-btn" style="width:100%; margin-top: 5px;" onclick="saveBookDetails()">Save Details</button>
+        <div id="manageBorrowSection" class="action-divider" style="display: none;">
+            <label style="font-size: 11px; color: var(--dim);">Borrowing Logic:</label>
+            <div id="manageBorrowInputs"></div>
+        </div>
+        <div id="manageDeleteSection" class="action-divider" style="display: none;">
+            <button class="btn-action remove-btn" style="width:100%;" onclick="deleteCurrentBook()">Delete Book Permanently</button>
+        </div>
+        <button onclick="closeManageModal()" style="background:none; border:none; color:var(--dim); margin-top:15px; cursor:pointer; width:100%;">Close</button>
+    </div>
+</div>
+
+<div class="cart-footer">
+    <div id="cartItemsList" style="color: var(--dim); margin-bottom: 8px; font-size: 0.9em;">Cart Empty</div>
+    <div id="cartSummary" style="font-weight:bold;">Total: 0 Books</div>
+    <button class="btn-action add-btn" id="checkoutBtn" style="display:none; margin-top:10px;" onclick="openModal()">PROCEED TO CHECKOUT</button>
+</div>
+
+<div class="admin-wrapper" style="margin-top: 50px;">
+    <div id="adminPanel">
+        <h2 id="adminGreeting" style="color: #fff; margin: 0; text-decoration: underline;">Admin Management Corner</h2>
+        <button class="maint-btn" id="maintTrigger" onclick="toggleMaintenance()">Close Website (6h Timer)</button>
+
+        <div style="margin: 20px 0;">
+            <p style="color: var(--text);">Select Section:</p>
+            <button class="section-sel-btn" onclick="setAdminCat('islamic')">Islamic</button>
+            <button class="section-sel-btn" onclick="setAdminCat('history')">History</button>
+            <button class="section-sel-btn" onclick="setAdminCat('science')">Science</button>
+            <button class="section-sel-btn" onclick="setAdminCat('mystery')">Mystery</button>
+            <button class="section-sel-btn" onclick="setAdminCat('children')">Children</button>
+        </div>
+
+        <h3 id="adminTitle" style="color: #ff4444; margin-bottom: 5px;"></h3>
+        <div class="legend" id="adminLegend" style="display:none;">
+            <span style="background: var(--accent);">Available</span>
+            <span style="background: var(--borrowed);">Borrowed</span>
+            <span style="background: var(--slot-off); color: #888;">Empty</span>
+        </div>
+        <div id="slotGrid" class="slot-grid"></div>
+
+        <div class="security-box">
+            <h4 style="margin:0 0 10px 0; color: var(--text);">💰 Rate & Membership Settings</h4>
+            <div style="text-align: left; padding-left: 5%;">
+                <label style="font-size: 11px; color: var(--accent); font-weight: bold;">Daily Rent (PKR):</label>
+                <input type="number" id="rateDaily" style="width:95%; padding:8px; margin-top:2px; margin-bottom:10px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('rateThreshold').focus(); }">
+
+                <label style="font-size: 11px; color: var(--accent); font-weight: bold;">Discount Threshold (PKR):</label>
+                <input type="number" id="rateThreshold" style="width:95%; padding:8px; margin-top:2px; margin-bottom:10px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('rateDiscount').focus(); }">
+
+                <label style="font-size: 11px; color: var(--accent); font-weight: bold;">Discount Percentage (%):</label>
+                <input type="number" id="rateDiscount" style="width:95%; padding:8px; margin-top:2px; margin-bottom:15px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('rate1M').focus(); }">
+
+                <label style="font-size: 11px; color: var(--gold); font-weight: bold;">1 Month Premium (PKR):</label>
+                <input type="number" id="rate1M" style="width:95%; padding:8px; margin-top:2px; margin-bottom:10px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('rate6M').focus(); }">
+
+                <label style="font-size: 11px; color: var(--gold); font-weight: bold;">6 Months Premium (PKR):</label>
+                <input type="number" id="rate6M" style="width:95%; padding:8px; margin-top:2px; margin-bottom:10px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('rate1Y').focus(); }">
+
+                <label style="font-size: 11px; color: var(--gold); font-weight: bold;">1 Year Premium (PKR):</label>
+                <input type="number" id="rate1Y" style="width:95%; padding:8px; margin-top:2px; margin-bottom:15px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;" onkeydown="if(event.key === 'Enter') { event.preventDefault(); updateRates(); }">
+            </div>
+            <button onclick="updateRates()" style="background:var(--accent); color:white; border:none; padding:8px 15px; border-radius:5px; font-weight:bold;">Save Rates</button>
+        </div>
+
+        <div class="security-box">
+            <h4 style="margin:0 0 10px 0; color: var(--text);">Update Your Credentials</h4>
+            <div style="text-align: left; padding-left: 5%;">
+                <label style="font-size: 11px; color: var(--accent); font-weight: bold;">👤 Username:</label>
+                <input type="text" id="newAdminUser" style="width:95%; padding:8px; margin-top:2px; margin-bottom:10px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('newAdminPass').focus(); }">
+                <label style="font-size: 11px; color: var(--accent); font-weight: bold;">🔑 Password:</label>
+                <div style="position: relative; width: 95%; margin-bottom: 15px;">
+                    <input type="password" id="newAdminPass" style="width:100%; padding:8px 35px 8px 8px; margin-top:2px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;" onkeydown="if(event.key === 'Enter') { event.preventDefault(); updateSecurity(); }">
+                    <span id="toggleEye" onclick="togglePassVisibility()" style="position: absolute; right: 10px; top: 11px; cursor: pointer; user-select: none; font-size: 14px;">👁️</span>
+                </div>
+            </div>
+            <button onclick="updateSecurity()" style="background:var(--accent); color:white; border:none; padding:8px 15px; border-radius:5px; font-weight:bold;">Save Credentials</button>
+        </div>
+
+        <div class="security-box">
+            <h4 style="margin:0 0 10px 0; color: var(--text);">WhatsApp Settings</h4>
+            <div style="text-align: left; padding-left: 5%;">
+                <label style="font-size: 11px; color: var(--accent); font-weight: bold;">🛒 Order Placement Number:</label>
+                <input type="text" id="newOrderNum" style="width:95%; padding:8px; margin-top:2px; margin-bottom:10px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('newHelpNum').focus(); }">
+                <label style="font-size: 11px; color: var(--accent); font-weight: bold;">💬 Help / Contact Number:</label>
+                <input type="text" id="newHelpNum" style="width:95%; padding:8px; margin-top:2px; margin-bottom:10px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('newSubNum').focus(); }">
+                <label style="font-size: 11px; color: var(--gold); font-weight: bold;">👑 Subscription Number:</label>
+                <input type="text" id="newSubNum" style="width:95%; padding:8px; margin-top:2px; margin-bottom:15px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;" onkeydown="if(event.key === 'Enter') { event.preventDefault(); updateWhatsAppNumbers(); }">
+            </div>
+            <button onclick="updateWhatsAppNumbers()" style="background:#25D366; color:white; border:none; padding:8px 15px; border-radius:5px; font-weight: bold;">Save Numbers</button>
+        </div>
+
+        <br>
+        <button onclick="location.reload()" style="cursor:pointer; padding: 10px 25px; background: var(--text); color: var(--bg); border: none; border-radius:5px; font-weight:bold;">Logout Admin</button>
+    </div>
+
+    <div class="admin-bar">
+        <span id="adminEntrance" onclick="openLoginModal()">Admin Management Corner</span>
+    </div>
+    <div style="text-align:center; padding:15px; font-size:11px; color:var(--dim); background: var(--footer-bg);">&copy; 2026 The Great Shelf.</div>
+</div>
+
+<script>
+    const themeBtn = document.getElementById('themeBtn');
+    if(localStorage.getItem('theme') === 'light') { document.body.classList.add('light-mode'); themeBtn.innerText = "🌙"; }
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        if (document.body.classList.contains('light-mode')) { themeBtn.innerText = "🌙"; localStorage.setItem('theme', 'light'); }
+        else { themeBtn.innerText = "☀️"; localStorage.setItem('theme', 'dark'); }
+    }
+
+    let currentViewCat = 'islamic', adminManageCat = '', cart = [], currentAdminId = 0; 
+    let db = JSON.parse(localStorage.getItem('shelf_db')) || {};
+    let orderNumber = localStorage.getItem('order_num') || "923164889958";
+    let helpNumber = localStorage.getItem('help_num') || "923164889958";
+    let subNumber = localStorage.getItem('sub_num') || "923164889958";
+    let admin1User = localStorage.getItem('admin1_u') || "3520211111117", admin1Pass = localStorage.getItem('admin1_p') || "dashboardpython..pk";
+    let admin2User = localStorage.getItem('admin2_u') || "3520211111118", admin2Pass = localStorage.getItem('admin2_p') || "python1122..pk";
+
+    // Rate Management Variables
+    let shelfRates = JSON.parse(localStorage.getItem('shelf_rates')) || {
+        daily: 35,
+        threshold: 3500,
+        discount: 5,
+        m1: 10000,
+        m6: 55000,
+        m12: 100000
+    };
+
+    function applyRatesUI() {
+        document.getElementById('headerRatesDisplay').innerText = `${shelfRates.daily} PKR/Day | ${shelfRates.discount}% Discount on orders above ${shelfRates.threshold} PKR`;
+        document.getElementById('displayRate1M').innerText = shelfRates.m1.toLocaleString();
+        document.getElementById('displayRate6M').innerText = shelfRates.m6.toLocaleString();
+        document.getElementById('displayRate1Y').innerText = shelfRates.m12.toLocaleString();
+        
+        // Populate the dynamic subscription button number
+        document.getElementById('displaySubNum').innerText = subNumber;
+    }
+
+    function checkMaintenance() {
+        const expiry = localStorage.getItem('maint_expiry'), entrance = document.getElementById('adminEntrance');
+        if (expiry) {
+            const distance = expiry - new Date().getTime();
+            if (distance > 0) {
+                document.getElementById('siteContent').style.display = 'none';
+                document.getElementById('maintMessage').style.display = 'block';
+                document.getElementById('maintTrigger').innerText = "🔓 Open Website Now";
+                entrance.className = "link-maint"; entrance.innerText = "Admin: Enter Recovery Portal";
+                startTimer(expiry);
+            } else { localStorage.removeItem('maint_expiry'); }
+        } else { entrance.className = "link-normal"; }
+    }
+    function startTimer(expiry) {
+        const x = setInterval(() => {
+            const distance = expiry - new Date().getTime();
+            const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)), m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)), s = Math.floor((distance % (1000 * 60)) / 1000);
+            document.getElementById("digitalTimer").innerHTML = `${h<10?'0'+h:h}:${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
+            if (distance < 0) { clearInterval(x); location.reload(); }
+        }, 1000);
+    }
+    function toggleMaintenance() {
+        if (localStorage.getItem('maint_expiry')) { localStorage.removeItem('maint_expiry'); alert("Website Reopened!"); }
+        else { localStorage.setItem('maint_expiry', new Date().getTime() + (6 * 60 * 60 * 1000)); alert("Website Closed for 6 hours."); }
+        location.reload(); // Maintenance toggle is the only intentional reload left!
+    }
+    function openSubModal() { document.getElementById('subModal').style.display = 'flex'; }
+    function closeSubModal() { document.getElementById('subModal').style.display = 'none'; }
+    
+    // Updated to handle dynamic pricing in the message
+    function contactSubscription(planName, price) { 
+        let msg = `Assalamu Alaikum, I am interested in the *${planName} (${price.toLocaleString()} PKR)* Premium Membership. Please provide payment details.`;
+        window.open(`https://wa.me/${subNumber}?text=${encodeURIComponent(msg)}`); 
+    }
+
+    // General Premium Membership Inquiry Action
+    function contactSubHelp() {
+        window.open(`https://wa.me/${subNumber}?text=Assalamu Alaikum, I have a question regarding the Premium Memberships.`);
+    }
+    
+    function openLoginModal() {
+        document.getElementById('loginError').style.display = 'none';
+        document.getElementById('authUsername').value = '';
+        let p = document.getElementById('authPassword'); p.value = ''; p.type = 'password';
+        document.getElementById('authToggleEye').innerText = '👁️';
+        document.getElementById('loginModal').style.display = 'flex';
+        setTimeout(() => document.getElementById('authUsername').focus(), 100);
+    }
+    function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
+    function toggleAuthPassVisibility() {
+        const p = document.getElementById('authPassword'), e = document.getElementById('authToggleEye');
+        p.type = p.type === "password" ? "text" : "password"; e.innerText = p.type === "password" ? "👁️" : "🙈";
+    }
+    function processLogin() {
+        let u = document.getElementById('authUsername').value, p = document.getElementById('authPassword').value;
+        if (u === admin1User && p === admin1Pass) { currentAdminId = 1; closeLoginModal(); openAdminPanel("Admin 1: Abdul Rahman"); }
+        else if (u === admin2User && p === admin2Pass) { currentAdminId = 2; closeLoginModal(); openAdminPanel("Admin 2: Syed Hamza Ali"); }
+        else { document.getElementById('loginError').style.display = 'block'; }
+    }
+    function openAdminPanel(name) {
+        document.getElementById('adminGreeting').innerText = name;
+        
+        // Populate Rates
+        document.getElementById('rateDaily').value = shelfRates.daily;
+        document.getElementById('rateThreshold').value = shelfRates.threshold;
+        document.getElementById('rateDiscount').value = shelfRates.discount;
+        document.getElementById('rate1M').value = shelfRates.m1;
+        document.getElementById('rate6M').value = shelfRates.m6;
+        document.getElementById('rate1Y').value = shelfRates.m12;
+
+        document.getElementById('newOrderNum').value = orderNumber;
+        document.getElementById('newHelpNum').value = helpNumber;
+        document.getElementById('newSubNum').value = subNumber;
+        if (currentAdminId === 1) { document.getElementById('newAdminUser').value = admin1User; document.getElementById('newAdminPass').value = admin1Pass; }
+        else { document.getElementById('newAdminUser').value = admin2User; document.getElementById('newAdminPass').value = admin2Pass; }
+        document.getElementById('newAdminPass').type = "password"; document.getElementById('toggleEye').innerText = "👁️";
+        document.getElementById('adminPanel').style.display = 'block'; window.scrollTo(0, document.body.scrollHeight);
+    }
+    function togglePassVisibility() {
+        const p = document.getElementById('newAdminPass'), e = document.getElementById('toggleEye');
+        p.type = p.type === "password" ? "text" : "password"; e.innerText = p.type === "password" ? "👁️" : "🙈";
+    }
+    
+    // SAVING FUNCTIONS (NO RELOAD!)
+    function updateRates() {
+        shelfRates.daily = parseFloat(document.getElementById('rateDaily').value) || 35;
+        shelfRates.threshold = parseFloat(document.getElementById('rateThreshold').value) || 3500;
+        shelfRates.discount = parseFloat(document.getElementById('rateDiscount').value) || 5;
+        shelfRates.m1 = parseFloat(document.getElementById('rate1M').value) || 10000;
+        shelfRates.m6 = parseFloat(document.getElementById('rate6M').value) || 55000;
+        shelfRates.m12 = parseFloat(document.getElementById('rate1Y').value) || 100000;
+        localStorage.setItem('shelf_rates', JSON.stringify(shelfRates));
+        applyRatesUI(); // Updates UI without refreshing
+        alert("Rates Updated Successfully!");
+    }
+    function updateSecurity() {
+        const u = document.getElementById('newAdminUser').value, p = document.getElementById('newAdminPass').value;
+        if(u && p) {
+            if(currentAdminId === 1) { localStorage.setItem('admin1_u', u); localStorage.setItem('admin1_p', p); admin1User = u; admin1Pass = p; }
+            else { localStorage.setItem('admin2_u', u); localStorage.setItem('admin2_p', p); admin2User = u; admin2Pass = p; }
+            alert("Credentials updated!");
+        }
+    }
+    function updateWhatsAppNumbers() {
+        const o = document.getElementById('newOrderNum').value, h = document.getElementById('newHelpNum').value, s = document.getElementById('newSubNum').value;
+        if (o) { localStorage.setItem('order_num', o); orderNumber = o; } 
+        if (h) { localStorage.setItem('help_num', h); helpNumber = h; } 
+        if (s) { localStorage.setItem('sub_num', s); subNumber = s; }
+        applyRatesUI(); // Updates dynamic subNumber text without refreshing
+        alert("WhatsApp Numbers updated!");
+    }
+
+    function renderUserBooks() {
+        const container = document.getElementById('bookContainer'); container.innerHTML = "";
+        let now = new Date().getTime();
+        for (let i = 1; i <= 250; i++) {
+            let id = `${currentViewCat}_${i}`, data = db[id];
+            if (data && data.active) {
+                let isB = data.borrowedUntil && data.borrowedUntil > now;
+                let btnH = isB ? `<button class="btn-action borrowed-btn" disabled>Borrowed (${Math.ceil((data.borrowedUntil-now)/86400000)}d left)</button>` : `<button class="btn-action ${cart.includes(data.title)?'remove-btn':'add-btn'}" onclick="${cart.includes(data.title)?`removeFromCart('${data.title}')`:`addToCart('${data.title}')`}">${cart.includes(data.title)?'Remove':'Add to Cart'}</button>`;
+                const div = document.createElement('div'); div.className = 'book-item';
+                div.innerHTML = `<img src="${currentViewCat}book${i}.jpg" onerror="this.src='https://via.placeholder.com/100x150?text=Book'"><div class="book-info"><h3>${data.title}</h3><p>${data.description}</p>${btnH}</div>`;
+                container.appendChild(div);
+            }
+        }
+    }
+    function setAdminCat(cat) { adminManageCat = cat; document.getElementById('adminTitle').innerText = `Editing: ${cat.toUpperCase()}`; document.getElementById('adminLegend').style.display = 'block'; renderAdminSlots(); }
+    function renderAdminSlots() {
+        const grid = document.getElementById('slotGrid'); grid.innerHTML = "";
+        let now = new Date().getTime();
+        for (let i = 1; i <= 250; i++) {
+            let id = `${adminManageCat}_${i}`, data = db[id], btn = document.createElement('button');
+            btn.className = "slot-btn";
+            if (!data) { btn.style.background = "var(--slot-off)"; btn.style.color = "var(--text)"; }
+            else if (data.borrowedUntil && data.borrowedUntil > now) { btn.style.background = "var(--borrowed)"; btn.style.color = "white"; }
+            else { btn.style.background = "var(--accent)"; btn.style.color = "white"; }
+            btn.innerText = i; btn.onclick = () => openManageModal(id, i, data); grid.appendChild(btn);
+        }
+    }
+    function openManageModal(id, num, data) {
+        let now = new Date().getTime(); document.getElementById('manageSlotId').value = id; document.getElementById('manageTitleHeader').innerText = `Slot #${num}`;
+        let tI = document.getElementById('manageTitle'), dI = document.getElementById('manageDesc'), bS = document.getElementById('manageBorrowSection'), dS = document.getElementById('manageDeleteSection'), bIn = document.getElementById('manageBorrowInputs');
+        if (!data) { tI.value = ""; dI.value = ""; bS.style.display = "none"; dS.style.display = "none"; }
+        else {
+            tI.value = data.title; dI.value = data.description; bS.style.display = "block"; dS.style.display = "block";
+            if (data.borrowedUntil && data.borrowedUntil > now) { bIn.innerHTML = `<p style="color:var(--borrowed);margin:5px 0;font-weight:bold;">Borrowed for ${Math.ceil((data.borrowedUntil-now)/86400000)} more days.</p><button class="btn-action" style="background:var(--borrowed);color:white;width:100%;margin-top:5px;" onclick="returnEarlyBook()">Mark as Returned Early</button>`; }
+            else { bIn.innerHTML = `<input type="number" id="borrowDaysInput" placeholder="Enter Days to Borrow" onkeydown="if(event.key==='Enter') { event.preventDefault(); markBookBorrowed(); }"><button class="btn-action" style="background:var(--dim);color:white;width:100%;" onclick="markBookBorrowed()">Mark Book as Borrowed</button>`; }
+        }
+        document.getElementById('manageModal').style.display = 'flex';
+    }
+    function closeManageModal() { document.getElementById('manageModal').style.display = 'none'; }
+    function saveBookDetails() {
+        let id = document.getElementById('manageSlotId').value, t = document.getElementById('manageTitle').value, d = document.getElementById('manageDesc').value;
+        if (!t || !d) return alert("Fill fields!");
+        if (!db[id]) db[id] = { active: true, title: t, description: d };
+        else { db[id].title = t; db[id].description = d; }
+        finishManageAction();
+    }
+    function markBookBorrowed() {
+        let id = document.getElementById('manageSlotId').value, days = document.getElementById('borrowDaysInput').value;
+        if (days > 0) { db[id].borrowedUntil = new Date().getTime() + (days * 86400000); finishManageAction(); }
+    }
+    function returnEarlyBook() { let id = document.getElementById('manageSlotId').value; if (confirm("Mark as returned?")) { delete db[id].borrowedUntil; finishManageAction(); } }
+    function deleteCurrentBook() { let id = document.getElementById('manageSlotId').value; if (confirm("Delete permanently?")) { delete db[id]; finishManageAction(); } }
+    
+    // View Updating (NO RELOAD!)
+    function finishManageAction() { localStorage.setItem('shelf_db', JSON.stringify(db)); renderAdminSlots(); renderUserBooks(); closeManageModal(); }
+    
+    function addToCart(t) { if(!cart.includes(t)) cart.push(t); updateUI(); }
+    function removeFromCart(t) { cart = cart.filter(i => i !== t); updateUI(); }
+    function updateUI() {
+        document.getElementById('cartItemsList').innerText = cart.length > 0 ? "Items: " + cart.join(", ") : "Cart Empty";
+        document.getElementById('cartSummary').innerText = `Total: ${cart.length} Books`;
+        document.getElementById('checkoutBtn').style.display = cart.length > 0 ? "inline-block" : "none";
+        renderUserBooks();
+    }
+    function openModal() { document.getElementById('checkoutModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('checkoutModal').style.display = 'none'; }
+    function contactHelp() { window.open(`https://wa.me/${helpNumber}?text=Assalamu Alaikum, I need some help regarding The Great Shelf.`); }
+    
+    // Updated to use Dynamic Rates for calculation
+    function sendWhatsApp() {
+        const n = document.getElementById('custName').value, a = document.getElementById('custAddress').value, d = document.getElementById('rentDays').value;
+        if(!n || !a || !d) return alert("Fill details!");
+        
+        let t = cart.length * d * shelfRates.daily; 
+        if(t > shelfRates.threshold) t *= (1 - (shelfRates.discount / 100));
+        t = Math.round(t);
+        
+        let msg = `Assalamu Alaikum,%0A%0A*Borrowing Request:*%0A${cart.map((b,i)=>(i+1)+". "+b).join("%0A")}%0A%0A*Name:* ${n}%0A*Address:* ${a}%0A*Days:* ${d}%0A*Total:* ${t} PKR%0A_(Delivery extra)_`;
+        window.open(`https://wa.me/${orderNumber}?text=${msg}`);
+    }
+    
+    function searchBooks() {
+        let input = document.getElementById('bookSearch').value.toLowerCase(), items = document.getElementsByClassName('book-item');
+        for (let item of items) { let title = item.querySelector('h3').innerText.toLowerCase(); item.style.display = title.includes(input) ? "flex" : "none"; }
+    }
+    function changeCat(c) { currentViewCat = c; renderUserBooks(); }
+    
+    // Bootup
+    applyRatesUI();
+    checkMaintenance(); 
+    renderUserBooks();
+</script>
+</body>
+</html> 
