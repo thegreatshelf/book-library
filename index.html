@@ -455,6 +455,7 @@
         document.getElementById('displayRate6M').innerText = shelfRates.m6.toLocaleString();
         document.getElementById('displayRate1Y').innerText = shelfRates.m12.toLocaleString();
         
+        // Populate the dynamic subscription button number
         document.getElementById('displaySubNum').innerText = subNumber;
 
         // Apply Global Alert Tape
@@ -492,16 +493,18 @@
     function toggleMaintenance() {
         if (localStorage.getItem('maint_expiry')) { localStorage.removeItem('maint_expiry'); alert("Website Reopened!"); }
         else { localStorage.setItem('maint_expiry', new Date().getTime() + (6 * 60 * 60 * 1000)); alert("Website Closed for 6 hours."); }
-        location.reload(); 
+        location.reload(); // Maintenance toggle is the only intentional reload left!
     }
     function openSubModal() { document.getElementById('subModal').style.display = 'flex'; }
     function closeSubModal() { document.getElementById('subModal').style.display = 'none'; }
     
+    // Updated to handle dynamic pricing in the message
     function contactSubscription(planName, price) { 
         let msg = `Assalamu Alaikum, I am interested in the *${planName} (${price.toLocaleString()} PKR)* Premium Membership. Please provide payment details.`;
         window.open(`https://wa.me/${subNumber}?text=${encodeURIComponent(msg)}`); 
     }
 
+    // General Premium Membership Inquiry Action
     function contactSubHelp() {
         window.open(`https://wa.me/${subNumber}?text=Assalamu Alaikum, I have a question regarding the Premium Memberships.`);
     }
@@ -530,7 +533,8 @@
         
         document.getElementById('alertTextInput').value = alertData.text;
         document.getElementById('alertStatus').value = alertData.status;
-        
+
+        // Populate Rates
         document.getElementById('rateDaily').value = shelfRates.daily;
         document.getElementById('rateThreshold').value = shelfRates.threshold;
         document.getElementById('rateDiscount').value = shelfRates.discount;
@@ -556,7 +560,7 @@
         alertData.text = document.getElementById('alertTextInput').value;
         alertData.status = document.getElementById('alertStatus').value;
         localStorage.setItem('shelf_alert', JSON.stringify(alertData));
-        applyRatesUI(); 
+        applyRatesUI(); // Updates UI without refreshing
         alert("Alert Updated Successfully!");
     }
 
@@ -568,7 +572,7 @@
         shelfRates.m6 = parseFloat(document.getElementById('rate6M').value) || 55000;
         shelfRates.m12 = parseFloat(document.getElementById('rate1Y').value) || 100000;
         localStorage.setItem('shelf_rates', JSON.stringify(shelfRates));
-        applyRatesUI(); 
+        applyRatesUI(); // Updates UI without refreshing
         alert("Rates Updated Successfully!");
     }
     function updateSecurity() {
@@ -584,7 +588,7 @@
         if (o) { localStorage.setItem('order_num', o); orderNumber = o; } 
         if (h) { localStorage.setItem('help_num', h); helpNumber = h; } 
         if (s) { localStorage.setItem('sub_num', s); subNumber = s; }
-        applyRatesUI(); 
+        applyRatesUI(); // Updates dynamic subNumber text without refreshing
         alert("WhatsApp Numbers updated!");
     }
 
@@ -597,6 +601,8 @@
                 let isB = data.borrowedUntil && data.borrowedUntil > now;
                 let btnH = isB ? `<button class="btn-action borrowed-btn" disabled>Borrowed (${Math.ceil((data.borrowedUntil-now)/86400000)}d left)</button>` : `<button class="btn-action ${cart.includes(data.title)?'remove-btn':'add-btn'}" onclick="${cart.includes(data.title)?`removeFromCart('${data.title}')`:`addToCart('${data.title}')`}">${cart.includes(data.title)?'Remove':'Add to Cart'}</button>`;
                 const div = document.createElement('div'); div.className = 'book-item';
+                
+                // RETAINED LOWERCASE .jpg
                 div.innerHTML = `<img src="${currentViewCat}book${i}.jpg" onerror="this.src='https://via.placeholder.com/100x150?text=Book'"><div class="book-info"><h3>${data.title}</h3><p>${data.description}</p>${btnH}</div>`;
                 container.appendChild(div);
             }
