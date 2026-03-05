@@ -19,6 +19,8 @@
             --footer-bg: #000000;
             --admin-red: #3a0a0a;
             --gold: #D4AF37;
+            --silver: #C0C0C0;
+            --platinum: #E5E4E2;
             --slot-off: #222222;
             --shadow: rgba(0,0,0,0.8);
         }
@@ -133,6 +135,12 @@
         
         .action-divider { border-top: 1px solid var(--border); margin: 15px 0; padding-top: 15px; }
 
+        /* --- Membership Card Styling --- */
+        .mem-card { border-radius: 10px; padding: 15px; border: 1px solid var(--border); position: relative; }
+        .silver-card { border-left: 6px solid var(--silver); background: rgba(192, 192, 192, 0.05); }
+        .gold-card { border-left: 6px solid var(--gold); background: rgba(212, 175, 55, 0.08); border-color: var(--gold); }
+        .platinum-card { border-left: 6px solid var(--platinum); background: rgba(229, 228, 226, 0.05); }
+
         /* --- Cart Footer --- */
         .cart-footer {
             position: fixed; bottom: 0; width: 100%; background: var(--footer-bg); 
@@ -213,25 +221,27 @@
         <p style="color: var(--text); font-size: 0.9em; margin-bottom: 20px;">Enjoy <strong>Free Delivery</strong> and unlimited borrowing.</p>
         
         <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
-            <div style="border: 1px solid var(--border); padding: 15px; border-radius: 10px; background: rgba(212,175,55,0.05);">
-                <h4 style="margin: 0; color: var(--gold);">Monthly Pass</h4>
+            
+            <div class="mem-card silver-card">
+                <h4 style="margin: 0; color: var(--silver);">Monthly SILVER</h4>
                 <div style="font-size: 1.4em; font-weight: bold; margin: 5px 0;"><span id="displayRate1M"></span> <span style="font-size: 0.6em; color: var(--dim);">PKR/mo</span></div>
-                <button class="btn-action" style="width:100%; background: #25D366; color: white; font-size: 13px;" onclick="contactSubscription('1 Month', shelfRates.m1)">Select Monthly</button>
+                <button class="btn-action" style="width:100%; background: #25D366; color: white; font-size: 13px;" onclick="contactSubscription('Monthly Silver', shelfRates.m1)">Select Silver</button>
             </div>
 
-            <div style="border: 2px solid var(--gold); padding: 15px; border-radius: 10px; background: rgba(212,175,55,0.1); position: relative;">
-                <span style="position: absolute; top: -10px; right: 10px; background: var(--gold); color: black; font-size: 10px; padding: 2px 8px; border-radius: 5px; font-weight: bold;">SAVE</span>
-                <h4 style="margin: 0; color: var(--gold);">Semi-Annual Pass</h4>
+            <div class="mem-card gold-card">
+                <span style="position: absolute; top: -10px; right: 10px; background: var(--gold); color: black; font-size: 10px; padding: 2px 8px; border-radius: 5px; font-weight: bold;">POPULAR</span>
+                <h4 style="margin: 0; color: var(--gold);">6-Month GOLD</h4>
                 <div style="font-size: 1.4em; font-weight: bold; margin: 5px 0;"><span id="displayRate6M"></span> <span style="font-size: 0.6em; color: var(--dim);">PKR / 6 Months</span></div>
-                <button class="btn-action" style="width:100%; background: #25D366; color: white; font-size: 13px;" onclick="contactSubscription('6 Months', shelfRates.m6)">Select 6 Months</button>
+                <button class="btn-action" style="width:100%; background: #25D366; color: white; font-size: 13px;" onclick="contactSubscription('6-Month Gold', shelfRates.m6)">Select Gold</button>
             </div>
 
-            <div style="border: 1px solid var(--border); padding: 15px; border-radius: 10px; background: rgba(212,175,55,0.05); position: relative;">
+            <div class="mem-card platinum-card">
                 <span style="position: absolute; top: -10px; right: 10px; background: var(--accent); color: white; font-size: 10px; padding: 2px 8px; border-radius: 5px; font-weight: bold;">BEST VALUE</span>
-                <h4 style="margin: 0; color: var(--gold);">Annual Pass</h4>
+                <h4 style="margin: 0; color: var(--platinum);">Annual PLATINUM</h4>
                 <div style="font-size: 1.4em; font-weight: bold; margin: 5px 0;"><span id="displayRate1Y"></span> <span style="font-size: 0.6em; color: var(--dim);">PKR / Year</span></div>
-                <button class="btn-action" style="width:100%; background: #25D366; color: white; font-size: 13px;" onclick="contactSubscription('1 Year', shelfRates.m12)">Select Annual</button>
+                <button class="btn-action" style="width:100%; background: #25D366; color: white; font-size: 13px;" onclick="contactSubscription('Annual Platinum', shelfRates.m12)">Select Platinum</button>
             </div>
+
         </div>
 
         <button class="btn-action" style="width:100%; background: transparent; border: 2px solid #25D366; color: #25D366; font-size: 14px; margin-bottom: 15px; cursor: pointer; transition: 0.3s;" onclick="contactSubHelp()" onmouseover="this.style.background='#25D366'; this.style.color='white'" onmouseout="this.style.background='transparent'; this.style.color='#25D366'">
@@ -330,13 +340,13 @@
                 <label style="font-size: 11px; color: var(--accent); font-weight: bold;">Discount Percentage (%):</label>
                 <input type="number" id="rateDiscount" style="width:95%; padding:8px; margin-top:2px; margin-bottom:15px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('rate1M').focus(); }">
 
-                <label style="font-size: 11px; color: var(--gold); font-weight: bold;">1 Month Premium (PKR):</label>
+                <label style="font-size: 11px; color: var(--silver); font-weight: bold;">1 Month Silver (PKR):</label>
                 <input type="number" id="rate1M" style="width:95%; padding:8px; margin-top:2px; margin-bottom:10px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('rate6M').focus(); }">
 
-                <label style="font-size: 11px; color: var(--gold); font-weight: bold;">6 Months Premium (PKR):</label>
+                <label style="font-size: 11px; color: var(--gold); font-weight: bold;">6 Months Gold (PKR):</label>
                 <input type="number" id="rate6M" style="width:95%; padding:8px; margin-top:2px; margin-bottom:10px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;" onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('rate1Y').focus(); }">
 
-                <label style="font-size: 11px; color: var(--gold); font-weight: bold;">1 Year Premium (PKR):</label>
+                <label style="font-size: 11px; color: var(--platinum); font-weight: bold;">1 Year Platinum (PKR):</label>
                 <input type="number" id="rate1Y" style="width:95%; padding:8px; margin-top:2px; margin-bottom:15px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;" onkeydown="if(event.key === 'Enter') { event.preventDefault(); updateRates(); }">
             </div>
             <button onclick="updateRates()" style="background:var(--accent); color:white; border:none; padding:8px 15px; border-radius:5px; font-weight:bold;">Save Rates</button>
@@ -537,6 +547,8 @@
                 let isB = data.borrowedUntil && data.borrowedUntil > now;
                 let btnH = isB ? `<button class="btn-action borrowed-btn" disabled>Borrowed (${Math.ceil((data.borrowedUntil-now)/86400000)}d left)</button>` : `<button class="btn-action ${cart.includes(data.title)?'remove-btn':'add-btn'}" onclick="${cart.includes(data.title)?`removeFromCart('${data.title}')`:`addToCart('${data.title}')`}">${cart.includes(data.title)?'Remove':'Add to Cart'}</button>`;
                 const div = document.createElement('div'); div.className = 'book-item';
+                
+                // RETAINED LOWERCASE .jpg
                 div.innerHTML = `<img src="${currentViewCat}book${i}.jpg" onerror="this.src='https://via.placeholder.com/100x150?text=Book'"><div class="book-info"><h3>${data.title}</h3><p>${data.description}</p>${btnH}</div>`;
                 container.appendChild(div);
             }
@@ -621,4 +633,4 @@
     renderUserBooks();
 </script>
 </body>
-</html> 
+</html>
