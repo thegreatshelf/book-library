@@ -23,6 +23,7 @@
             --platinum: #E5E4E2;
             --slot-off: #222222;
             --shadow: rgba(0,0,0,0.8);
+            --alert-red: #cc0000; /* Added for the tape */
         }
 
         /* --- LIGHT MODE VARIABLES --- */
@@ -49,6 +50,20 @@
             margin: 0;
             padding-bottom: 250px;
             transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* --- GLOBAL ALERT TAPE --- */
+        #alertTape {
+            display: none;
+            background: var(--alert-red);
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            padding: 8px 0;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 2px solid rgba(0,0,0,0.2);
+            z-index: 3000;
         }
 
         /* --- Header Styles & Theme Toggle --- */
@@ -186,6 +201,10 @@
     </div>
 </div>
 
+<div id="alertTape">
+    <marquee id="alertMarquee" behavior="scroll" direction="left" scrollamount="6">Welcome to The Great Shelf!</marquee>
+</div>
+
 <div id="siteContent">
     <header>
         <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Switch Light/Dark Mode">☀️</button>
@@ -221,7 +240,6 @@
         <p style="color: var(--text); font-size: 0.9em; margin-bottom: 20px;">Enjoy <strong>Free Delivery</strong> and unlimited borrowing.</p>
         
         <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
-            
             <div class="mem-card silver-card">
                 <h4 style="margin: 0; color: var(--silver);">Monthly SILVER</h4>
                 <div style="font-size: 1.4em; font-weight: bold; margin: 5px 0;"><span id="displayRate1M"></span> <span style="font-size: 0.6em; color: var(--dim);">PKR/mo</span></div>
@@ -241,7 +259,6 @@
                 <div style="font-size: 1.4em; font-weight: bold; margin: 5px 0;"><span id="displayRate1Y"></span> <span style="font-size: 0.6em; color: var(--dim);">PKR / Year</span></div>
                 <button class="btn-action" style="width:100%; background: #25D366; color: white; font-size: 13px;" onclick="contactSubscription('Annual Platinum', shelfRates.m12)">Select Platinum</button>
             </div>
-
         </div>
 
         <button class="btn-action" style="width:100%; background: transparent; border: 2px solid #25D366; color: #25D366; font-size: 14px; margin-bottom: 15px; cursor: pointer; transition: 0.3s;" onclick="contactSubHelp()" onmouseover="this.style.background='#25D366'; this.style.color='white'" onmouseout="this.style.background='transparent'; this.style.color='#25D366'">
@@ -329,6 +346,21 @@
         <div id="slotGrid" class="slot-grid"></div>
 
         <div class="security-box">
+            <h4 style="margin:0 0 10px 0; color: var(--text);">🚨 Red Alert Tape</h4>
+            <div style="text-align: left; padding-left: 5%;">
+                <label style="font-size: 11px; color: var(--accent); font-weight: bold;">Alert Message:</label>
+                <input type="text" id="alertTextInput" style="width:95%; padding:8px; margin-top:2px; margin-bottom:10px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;" placeholder="Type message here...">
+                
+                <label style="font-size: 11px; color: var(--accent); font-weight: bold;">Status:</label>
+                <select id="alertStatus" style="width:95%; padding:8px; margin-top:2px; margin-bottom:15px; background:var(--bg); color:var(--text); border:1px solid var(--border); box-sizing: border-box;">
+                    <option value="off">Hidden</option>
+                    <option value="on">Visible (Circulating)</option>
+                </select>
+            </div>
+            <button onclick="saveAlertSettings()" style="background:var(--accent); color:white; border:none; padding:8px 15px; border-radius:5px; font-weight:bold;">Apply Alert</button>
+        </div>
+
+        <div class="security-box">
             <h4 style="margin:0 0 10px 0; color: var(--text);">💰 Rate & Membership Settings</h4>
             <div style="text-align: left; padding-left: 5%;">
                 <label style="font-size: 11px; color: var(--accent); font-weight: bold;">Daily Rent (PKR):</label>
@@ -406,7 +438,7 @@
     let admin1User = localStorage.getItem('admin1_u') || "3520211111117", admin1Pass = localStorage.getItem('admin1_p') || "dashboardpython..pk";
     let admin2User = localStorage.getItem('admin2_u') || "3520211111118", admin2Pass = localStorage.getItem('admin2_p') || "python1122..pk";
 
-    // Rate Management Variables
+    // Rate & Alert Variables
     let shelfRates = JSON.parse(localStorage.getItem('shelf_rates')) || {
         daily: 35,
         threshold: 3500,
@@ -415,6 +447,7 @@
         m6: 55000,
         m12: 100000
     };
+    let alertData = JSON.parse(localStorage.getItem('shelf_alert')) || { text: "Welcome to The Great Shelf!", status: "off" };
 
     function applyRatesUI() {
         document.getElementById('headerRatesDisplay').innerText = `${shelfRates.daily} PKR/Day | ${shelfRates.discount}% Discount on orders above ${shelfRates.threshold} PKR`;
@@ -422,8 +455,17 @@
         document.getElementById('displayRate6M').innerText = shelfRates.m6.toLocaleString();
         document.getElementById('displayRate1Y').innerText = shelfRates.m12.toLocaleString();
         
-        // Populate the dynamic subscription button number
         document.getElementById('displaySubNum').innerText = subNumber;
+
+        // Apply Global Alert Tape
+        const tape = document.getElementById('alertTape');
+        const marquee = document.getElementById('alertMarquee');
+        if(alertData.status === "on") {
+            tape.style.display = "block";
+            marquee.innerText = alertData.text;
+        } else {
+            tape.style.display = "none";
+        }
     }
 
     function checkMaintenance() {
@@ -450,18 +492,16 @@
     function toggleMaintenance() {
         if (localStorage.getItem('maint_expiry')) { localStorage.removeItem('maint_expiry'); alert("Website Reopened!"); }
         else { localStorage.setItem('maint_expiry', new Date().getTime() + (6 * 60 * 60 * 1000)); alert("Website Closed for 6 hours."); }
-        location.reload(); // Maintenance toggle is the only intentional reload left!
+        location.reload(); 
     }
     function openSubModal() { document.getElementById('subModal').style.display = 'flex'; }
     function closeSubModal() { document.getElementById('subModal').style.display = 'none'; }
     
-    // Updated to handle dynamic pricing in the message
     function contactSubscription(planName, price) { 
         let msg = `Assalamu Alaikum, I am interested in the *${planName} (${price.toLocaleString()} PKR)* Premium Membership. Please provide payment details.`;
         window.open(`https://wa.me/${subNumber}?text=${encodeURIComponent(msg)}`); 
     }
 
-    // General Premium Membership Inquiry Action
     function contactSubHelp() {
         window.open(`https://wa.me/${subNumber}?text=Assalamu Alaikum, I have a question regarding the Premium Memberships.`);
     }
@@ -488,7 +528,9 @@
     function openAdminPanel(name) {
         document.getElementById('adminGreeting').innerText = name;
         
-        // Populate Rates
+        document.getElementById('alertTextInput').value = alertData.text;
+        document.getElementById('alertStatus').value = alertData.status;
+        
         document.getElementById('rateDaily').value = shelfRates.daily;
         document.getElementById('rateThreshold').value = shelfRates.threshold;
         document.getElementById('rateDiscount').value = shelfRates.discount;
@@ -510,6 +552,14 @@
     }
     
     // SAVING FUNCTIONS (NO RELOAD!)
+    function saveAlertSettings() {
+        alertData.text = document.getElementById('alertTextInput').value;
+        alertData.status = document.getElementById('alertStatus').value;
+        localStorage.setItem('shelf_alert', JSON.stringify(alertData));
+        applyRatesUI(); 
+        alert("Alert Updated Successfully!");
+    }
+
     function updateRates() {
         shelfRates.daily = parseFloat(document.getElementById('rateDaily').value) || 35;
         shelfRates.threshold = parseFloat(document.getElementById('rateThreshold').value) || 3500;
@@ -518,7 +568,7 @@
         shelfRates.m6 = parseFloat(document.getElementById('rate6M').value) || 55000;
         shelfRates.m12 = parseFloat(document.getElementById('rate1Y').value) || 100000;
         localStorage.setItem('shelf_rates', JSON.stringify(shelfRates));
-        applyRatesUI(); // Updates UI without refreshing
+        applyRatesUI(); 
         alert("Rates Updated Successfully!");
     }
     function updateSecurity() {
@@ -534,7 +584,7 @@
         if (o) { localStorage.setItem('order_num', o); orderNumber = o; } 
         if (h) { localStorage.setItem('help_num', h); helpNumber = h; } 
         if (s) { localStorage.setItem('sub_num', s); subNumber = s; }
-        applyRatesUI(); // Updates dynamic subNumber text without refreshing
+        applyRatesUI(); 
         alert("WhatsApp Numbers updated!");
     }
 
@@ -547,8 +597,6 @@
                 let isB = data.borrowedUntil && data.borrowedUntil > now;
                 let btnH = isB ? `<button class="btn-action borrowed-btn" disabled>Borrowed (${Math.ceil((data.borrowedUntil-now)/86400000)}d left)</button>` : `<button class="btn-action ${cart.includes(data.title)?'remove-btn':'add-btn'}" onclick="${cart.includes(data.title)?`removeFromCart('${data.title}')`:`addToCart('${data.title}')`}">${cart.includes(data.title)?'Remove':'Add to Cart'}</button>`;
                 const div = document.createElement('div'); div.className = 'book-item';
-                
-                // RETAINED LOWERCASE .jpg
                 div.innerHTML = `<img src="${currentViewCat}book${i}.jpg" onerror="this.src='https://via.placeholder.com/100x150?text=Book'"><div class="book-info"><h3>${data.title}</h3><p>${data.description}</p>${btnH}</div>`;
                 container.appendChild(div);
             }
@@ -608,7 +656,6 @@
     function closeModal() { document.getElementById('checkoutModal').style.display = 'none'; }
     function contactHelp() { window.open(`https://wa.me/${helpNumber}?text=Assalamu Alaikum, I need some help regarding The Great Shelf.`); }
     
-    // Updated to use Dynamic Rates for calculation
     function sendWhatsApp() {
         const n = document.getElementById('custName').value, a = document.getElementById('custAddress').value, d = document.getElementById('rentDays').value;
         if(!n || !a || !d) return alert("Fill details!");
@@ -627,7 +674,6 @@
     }
     function changeCat(c) { currentViewCat = c; renderUserBooks(); }
     
-    // Bootup
     applyRatesUI();
     checkMaintenance(); 
     renderUserBooks();
